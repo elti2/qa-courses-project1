@@ -1,4 +1,6 @@
 require 'selenium-webdriver'
+require 'test/unit'
+include Test::Unit::Assertions
 
 def open_page
   @driver.navigate.to('http://localhost/litecart/en/')
@@ -30,4 +32,5 @@ end
 @driver = Selenium::WebDriver.for :chrome
 open_page
 puts find_stickers == find_product ? 'Same value of stickers and products - OK' : 'Different value of stickers and products - NOK'
+assert_equal(find_stickers, find_product)
 @driver.quit
