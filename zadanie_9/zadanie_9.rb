@@ -17,19 +17,49 @@ def wait
   @driver.find_element(:xpath => '//table/tbody/tr/td[5]')
 end
 
-def table_rows
-  rows = []
+@countries = []
+@hrefs = []
+
+def countries
   wait
-  @driver.find_elements(:xpath, '//table/tbody/tr/td[5]').each do |row|
-    rows << row.attribute('textContent')
+  table = @driver.find_element(:class, 'dataTable')
+  rows = table.find_elements(:class, 'row')
+  rows.each do |row|
+    cells = row.find_elements(:tag_name, 'td')
+    @countries << cells[4].attribute('textContent') unless cells[5].attribute('textContent').nil?
+    zone = cells[5].attribute('textContent')
+    if zone.to_i != 0
+      @hrefs << row.find_element(:tag_name, 'a').attribute('href')
+    end
   end
-  return rows
+  if @countries == @countries.sort
+    puts "countries sorted"
+  else
+    puts "countries not sorted"
+  end
+end
+
+def zones
+  wait
+  zones = []
+  @hrefs.each do |href|
+    @driver.navigate.to(href)
+    @driver.find_elements(:xpath, '//table[@id="table-zones"]/tbody/tr/td[3]').each do |zone|
+      zones << zone.attribute('textContent') unless zone.attribute('textContent').to_s.empty?
+    end
+
+    if zones == zones.sort
+      puts "zone sorted"
+    else
+      puts "zone not sorted"
+    end
+    zones.clear
+  end
 end
 
 @driver = Selenium::WebDriver.for :chrome
 open_page
 login
-countries_original = table_rows
-countries_sorted = countries_original.sort
-assert_equal(countries_original, countries_sorted)
+countries
+zones
 @driver.quit
